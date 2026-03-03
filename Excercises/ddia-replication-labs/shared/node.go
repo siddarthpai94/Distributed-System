@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"log"
 	"sync"
 )
 
@@ -40,7 +39,6 @@ func (n *Node) Start() {
 				case msg := <-n.Inbox:
 					n.handleMessage(msg)
 				case <-n.Shutdown:
-					log.Printf("node %s shutting down", n.ID)
 					return
 				}
 			}

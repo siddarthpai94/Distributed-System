@@ -3,7 +3,6 @@ package shared
 import (
 	"context"
 	"fmt"
-	"log"
 	"sort"
 	"time"
 )
@@ -45,14 +44,12 @@ func (h *TestHarness) Shutdown() {
 // Partition simulates isolating a set of node IDs by dropping messages to/from them.
 // For simplicity, this routine increases dropRate temporarily for the harness network.
 func (h *TestHarness) Partition(ctx context.Context, duration time.Duration) {
-	log.Printf("simulated partition: increasing drop rate")
 	old := h.Net.DropRate()
 	h.Net.SetDropRate(1.0)
 	go func() {
 		select {
 		case <-time.After(duration):
 			h.Net.SetDropRate(old)
-			log.Printf("partition healed")
 		case <-ctx.Done():
 			h.Net.SetDropRate(old)
 		}
