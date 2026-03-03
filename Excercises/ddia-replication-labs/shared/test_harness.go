@@ -2,7 +2,9 @@ package shared
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -26,6 +28,13 @@ func (h *TestHarness) AddNode(id string) *Node {
 	return n
 }
 
+// AddNodes is a convenience helper to add and start multiple nodes.
+func (h *TestHarness) AddNodes(ids ...string) {
+	for _, id := range ids {
+		h.AddNode(id)
+	}
+}
+
 // Shutdown stops all nodes.
 func (h *TestHarness) Shutdown() {
 	for _, n := range h.Nodes {
@@ -37,15 +46,27 @@ func (h *TestHarness) Shutdown() {
 // For simplicity, this routine increases dropRate temporarily for the harness network.
 func (h *TestHarness) Partition(ctx context.Context, duration time.Duration) {
 	log.Printf("simulated partition: increasing drop rate")
-	old := h.Net.dropRate
-	h.Net.dropRate = 1.0
+	old := h.Net.DropRate()
+	h.Net.SetDropRate(1.0)
 	go func() {
 		select {
 		case <-time.After(duration):
-			h.Net.dropRate = old
+			h.Net.SetDropRate(old)
 			log.Printf("partition healed")
 		case <-ctx.Done():
-			h.Net.dropRate = old
+			h.Net.SetDropRate(old)
 		}
 	}()
+}
+
+// PrintClusterState prints all node stores in deterministic node-id order.
+func PrintClusterState(nodes map[string]*Node) {
+	ids := make([]string, 0, len(nodes))
+	for id := range nodes {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		fmt.Printf("%s store: %+v\n", id, nodes[id].Store.Snapshot())
+	}
 }

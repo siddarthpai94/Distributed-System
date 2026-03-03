@@ -18,7 +18,5 @@ func main() {
 	h.Net.Send(shared.Message{From: "probe", To: "n1", Body: map[string]string{"leader_probe": "ping"}}, 5*time.Millisecond)
 	time.Sleep(40 * time.Millisecond)
 
-	for id, n := range h.Nodes {
-		fmt.Printf("%s store: %+v\n", id, n.Store.Snapshot())
-	}
+	shared.PrintClusterState(h.Nodes)
 }

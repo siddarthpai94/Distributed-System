@@ -18,7 +18,5 @@ func main() {
 	h.Net.Send(shared.Message{From: "client", To: "l1", Body: map[string]string{"k": "v1"}}, 20*time.Millisecond)
 	time.Sleep(60 * time.Millisecond)
 
-	for id, n := range h.Nodes {
-		fmt.Printf("%s store: %+v\n", id, n.Store.Snapshot())
-	}
+	shared.PrintClusterState(h.Nodes)
 }

@@ -27,7 +27,5 @@ func main() {
 
 	cancel()
 
-	for id, n := range h.Nodes {
-		fmt.Printf("%s store: %+v\n", id, n.Store.Snapshot())
-	}
+	shared.PrintClusterState(h.Nodes)
 }

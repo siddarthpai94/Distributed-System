@@ -2,16 +2,19 @@ package shared
 
 import (
 	"log"
-	"time"
+	"sync"
 )
 
 // Node represents a basic node in the cluster. Labs build on this skeleton.
 type Node struct {
-	ID       string
-	Inbox    chan Message
-	Network  *Network
-	Store    *KVStore
-	Shutdown chan struct{}
+	ID        string
+	Inbox     chan Message
+	Network   *Network
+	Store     *KVStore
+	Shutdown  chan struct{}
+	stopOnce  sync.Once
+	startOnce sync.Once
+	wg        sync.WaitGroup
 }
 
 // NewNode constructs a node and registers it on the network.
@@ -28,17 +31,21 @@ func NewNode(id string, net *Network) *Node {
 
 // Start a simple message-processing loop. Labs will replace or extend this.
 func (n *Node) Start() {
-	go func() {
-		for {
-			select {
-			case msg := <-n.Inbox:
-				n.handleMessage(msg)
-			case <-n.Shutdown:
-				log.Printf("node %s shutting down", n.ID)
-				return
+	n.startOnce.Do(func() {
+		n.wg.Add(1)
+		go func() {
+			defer n.wg.Done()
+			for {
+				select {
+				case msg := <-n.Inbox:
+					n.handleMessage(msg)
+				case <-n.Shutdown:
+					log.Printf("node %s shutting down", n.ID)
+					return
+				}
 			}
-		}
-	}()
+		}()
+	})
 }
 
 func (n *Node) handleMessage(msg Message) {
@@ -55,7 +62,8 @@ func (n *Node) handleMessage(msg Message) {
 
 // Stop signals the node to stop.
 func (n *Node) Stop() {
-	close(n.Shutdown)
-	// give loop a moment to exit
-	time.Sleep(10 * time.Millisecond)
+	n.stopOnce.Do(func() {
+		close(n.Shutdown)
+	})
+	n.wg.Wait()
 }
