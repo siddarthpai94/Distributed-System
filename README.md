@@ -1,6 +1,6 @@
-# DDIA Chapter 5: Replication & Consensus — Hands-On Exercises
+# Replication & Consensus — Hands-On Exercises
 
-A progressive lab series for implementing the core concepts from *Designing Data-Intensive Applications*, Chapter 5. Each exercise builds on the previous one. Recommended language: **Python or Go** (networking primitives are clean in both).
+A progressive lab series for implementing the core concepts  Recommended language: **Python or Go** (networking primitives are clean in both).
 
 ---
 
