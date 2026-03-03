@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -16,7 +17,7 @@ func main() {
 	h.AddNode("n3")
 
 	// simple chaos demo: partition the network briefly
-	ctx := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		h.Partition(ctx, 50*time.Millisecond)
 	}()
@@ -24,7 +25,7 @@ func main() {
 	h.Net.Send(shared.Message{From: "client", To: "n1", Body: map[string]string{"k": "v"}}, 5*time.Millisecond)
 	time.Sleep(120 * time.Millisecond)
 
-	close(ctx)
+	cancel()
 
 	for id, n := range h.Nodes {
 		fmt.Printf("%s store: %+v\n", id, n.Store.Snapshot())
